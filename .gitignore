@@ -1,0 +1,38 @@
+# Environment lokal (berisi path dataset)
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Hasil eksperimen (generated)
+results/metrics.csv
+results/figures/*.png
+notebooks/hasil_ekstraksi_*.csv
+
+# Dataset lokal (opsional fallback)
+dataset/train/**
+dataset/test/**
+!dataset/train/.gitkeep
+!dataset/test/.gitkeep
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Virtual env / conda
+.venv/
+venv/
+env/
