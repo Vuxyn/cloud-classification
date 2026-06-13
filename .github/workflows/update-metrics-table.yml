@@ -1,0 +1,33 @@
+name: Update Metrics Table in README
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'results/metrics.csv'
+  workflow_dispatch:
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Run metrics table generator
+        run: python src/generate_metrics_table.py
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: auto-update metrics comparison table in README.md"
+          file_pattern: 'README.md'

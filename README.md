@@ -22,7 +22,7 @@ backup/
 │   └── 04_experiment4.ipynb
 ├── results/
 │   ├── figures/             # Confusion matrix per experiment
-│   └── metrics.csv          # Akumulasi metrik (append)
+│   └── metrics.csv          # Tabel perbandingan experiment (di git)
 ├── .env.example
 └── README.md
 ```
@@ -131,9 +131,29 @@ Jika `.env` sudah diisi, folder `backup/dataset/` tidak dipakai.
 
 Setelah notebook selesai:
 
-- `notebooks/hasil_ekstraksi_{experiment_name}.csv` - fitur GLCM
-- `results/figures/{experiment_name}_{classifier}.png` - confusion matrix
-- `results/metrics.csv` - accuracy, precision, recall, f1 (mode append)
+- `notebooks/hasil_ekstraksi_{experiment_name}.csv` - fitur GLCM (lokal, tidak di git)
+- `results/figures/{experiment_name}_{classifier}.png` - confusion matrix (lokal)
+- `results/metrics.csv` - **tabel perbandingan experiment tim (di git, di-push)**
+
+### Alur kerja tim (tabel experiment)
+
+```text
+git pull                          # ambil metrics.csv terbaru
+Run All notebook (1 experiment)   # update 3 baris (rf, svm, knn)
+git add results/metrics.csv notebooks/XX.ipynb
+git commit -m "Experiment 2 selesai"
+git push
+```
+
+Tiap notebook hanya mengupdate baris experiment-nya sendiri di `metrics.csv`. Setelah 5 experiment selesai = 15 baris (5 x 3 classifier).
+
+### Tabel Perbandingan Performa
+
+Berikut adalah tabel performa model training dari tiap eksperimen yang di-generate secara otomatis:
+
+<!-- BEGIN METRICS -->
+*Belum ada hasil eksperimen.*
+<!-- END METRICS -->
 
 ## Catatan Penting
 

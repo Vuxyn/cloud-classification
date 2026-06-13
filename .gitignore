@@ -1,4 +1,3 @@
-# Environment lokal (berisi path dataset)
 .env
 
 # Python
@@ -14,12 +13,13 @@ build/
 # Jupyter
 .ipynb_checkpoints/
 
-# Hasil eksperimen (generated)
-results/metrics.csv
+# Hasil generated (besar, tidak perlu di git)
 results/figures/*.png
 notebooks/hasil_ekstraksi_*.csv
 
-# Dataset lokal (opsional fallback)
+# metrics.csv SENGAJA di-track — tabel perbandingan experiment tim
+# results/metrics.csv
+
 dataset/train/**
 dataset/test/**
 !dataset/train/.gitkeep
