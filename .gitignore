@@ -15,6 +15,7 @@ build/
 
 # Hasil generated (besar, tidak perlu di git)
 results/figures/*.png
+!results/figures/metrics_comparison.png
 notebooks/hasil_ekstraksi_*.csv
 
 # metrics.csv SENGAJA di-track — tabel perbandingan experiment tim
