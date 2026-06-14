@@ -61,6 +61,7 @@ def generate_chart(rows):
             "experiment3": "Experiment 3",
             "experiment4": "Experiment 4",
             "experiment5": "Experiment 5",
+            "experiment6": "Experiment 6",
             "experiment7": "Experiment 7",
             "experiment8": "Experiment 8",
         }
@@ -152,6 +153,7 @@ def main():
             "experiment3": "Experiment 3",
             "experiment4": "Experiment 4",
             "experiment5": "Experiment 5",
+            "experiment6": "Experiment 6",
             "experiment7": "Experiment 7",
             "experiment8": "Experiment 8",
         }
