@@ -152,7 +152,11 @@ Tiap notebook hanya mengupdate baris experiment-nya sendiri di `metrics.csv`. Se
 Berikut adalah tabel performa model training dari tiap eksperimen yang di-generate secara otomatis:
 
 <!-- BEGIN METRICS -->
-*Belum ada hasil eksperimen.*
+| Experiment | Classifier | Accuracy | Precision | Recall | F1-Score |
+|---|---|---|---|---|---|
+| Baseline | Random Forest | 55.79% | 55.03% | 55.79% | 54.93% |
+| Baseline | SVM | 52.42% | 51.94% | 52.42% | 50.06% |
+| Baseline | KNN | 51.29% | 50.37% | 51.29% | 50.25% |
 <!-- END METRICS -->
 
 ## Catatan Penting
