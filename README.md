@@ -154,9 +154,12 @@ Berikut adalah tabel performa model training dari tiap eksperimen yang di-genera
 <!-- BEGIN METRICS -->
 | Experiment | Classifier | Accuracy | Precision | Recall | F1-Score |
 |---|---|---|---|---|---|
-| Baseline | Random Forest | 55.79% | 55.03% | 55.79% | 54.93% |
-| Baseline | SVM | 52.42% | 51.94% | 52.42% | 50.06% |
-| Baseline | KNN | 51.29% | 50.37% | 51.29% | 50.25% |
+| Baseline | Random Forest | 0,5579 | 0,5503 | 0,5579 | 0,5493 |
+| Baseline | SVM | 0,5242 | 0,5194 | 0,5242 | 0,5006 |
+| Baseline | KNN | 0,5129 | 0,5037 | 0,5129 | 0,5025 |
+| Experiment 1 | Random Forest | 0,5455 | 0,5295 | 0,5455 | 0,5241 |
+| Experiment 1 | SVM | 0,5305 | 0,5068 | 0,5305 | 0,4698 |
+| Experiment 1 | KNN | 0,4924 | 0,4698 | 0,4924 | 0,4721 |
 <!-- END METRICS -->
 
 ## Catatan Penting
