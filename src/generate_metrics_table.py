@@ -71,6 +71,7 @@ def main():
             "experiment2": "Experiment 2",
             "experiment3": "Experiment 3",
             "experiment4": "Experiment 4",
+            "experiment5": "Experiment 5",
         }
 
         clf_map = {

@@ -127,16 +127,16 @@ def get_dataset_root() -> Path:
     raise FileNotFoundError("Dataset root tidak ditemukan. Lihat instruksi di atas.")
 
 
-def load_dataset(root_dir: Path, target_size: tuple = (128, 128)) -> tuple:
+def load_dataset(root_dir: Path, target_size: tuple = (128, 128), color: bool = False) -> tuple:
     """
     Load semua gambar dari struktur: root_dir/{train,test}/label_name/image.jpg
 
     - Gabungkan train dan test (klasifikasi ulang dengan split manual di notebook)
-    - Konversi ke grayscale menggunakan _ensure_grayscale dari image_processing.py
+    - Konversi ke grayscale jika color=False menggunakan _ensure_grayscale dari image_processing.py
     - Resize dengan cv2.resize ke target_size
     - Tampilkan tqdm progress bar per label
     - Skip gambar yang gagal dibaca (cv2.imread return None) + print warning
-    - Return: (images: np.ndarray shape NxHxW uint8, labels: np.ndarray str, filenames: list[str])
+    - Return: (images: np.ndarray shape NxHxW[xC] uint8, labels: np.ndarray str, filenames: list[str])
     """
     root = Path(root_dir)
     if not root.is_dir():
@@ -177,7 +177,8 @@ def load_dataset(root_dir: Path, target_size: tuple = (128, 128)) -> tuple:
                     print(f"PERINGATAN: Gagal membaca gambar, dilewati: {img_path}")
                     continue
 
-                img = _ensure_grayscale(img)
+                if not color:
+                    img = _ensure_grayscale(img)
                 img = cv2.resize(
                     img,
                     (target_size[1], target_size[0]),
