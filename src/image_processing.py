@@ -3,6 +3,12 @@ from __future__ import annotations
 import numpy as np
 import cv2
 
+import sys
+import os
+
+if 'google.colab' in sys.modules or os.path.exists('/usr/local/cuda'):
+    os.environ['CUDA_PATH'] = '/usr/local/cuda'
+
 try:
     import cupy as cp
     cp.cuda.Device(0).use()
