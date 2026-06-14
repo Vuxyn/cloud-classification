@@ -73,14 +73,22 @@ def get_dataset_root() -> Path:
     4. Fallback       -> print instruksi jelas dan raise FileNotFoundError
     """
     if _is_colab():
-        root = Path("/content/drive/MyDrive/GCD")
-        print(f"Environment: Google Colab | DATASET_ROOT = {root}")
-        if not root.is_dir():
-            raise FileNotFoundError(
-                f"Dataset tidak ditemukan di {root}. "
-                "Pastikan folder GCD ada di Google Drive MyDrive."
-            )
-        return root
+        colab_options = [
+            Path("/content/GCD-zip"),
+            Path("/content/GCD-zip/GCD"),
+            Path("/content/GCD"),
+            Path("/content/drive/MyDrive/GCD"),
+            Path("/content/drive/MyDrive/GCD-zip")
+        ]
+        for opt in colab_options:
+            if opt.is_dir():
+                if (opt / "train").is_dir() or (opt / "test").is_dir():
+                    print(f"Environment: Google Colab | DATASET_ROOT = {opt}")
+                    return opt
+        raise FileNotFoundError(
+            "Dataset tidak ditemukan di Google Colab.\n"
+            "Pastikan Anda sudah mengekstrak zip dataset ke /content/GCD-zip atau mengunggah folder GCD ke Google Drive."
+        )
 
     print("Environment: Lokal")
 
