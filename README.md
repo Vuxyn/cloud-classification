@@ -163,6 +163,9 @@ Berikut adalah tabel performa model training dari tiap eksperimen yang di-genera
 | Experiment 2 | Random Forest | 0,5924 | 0,5789 | 0,5924 | 0,5807 |
 | Experiment 2 | SVM | 0,5845 | 0,5660 | 0,5845 | 0,5553 |
 | Experiment 2 | KNN | 0,5511 | 0,5362 | 0,5511 | 0,5389 |
+| Experiment 3 | Random Forest | 0,5789 | 0,5656 | 0,5789 | 0,5658 |
+| Experiment 3 | SVM | 0,5539 | 0,5388 | 0,5539 | 0,5181 |
+| Experiment 3 | KNN | 0,5247 | 0,5106 | 0,5247 | 0,5119 |
 | Experiment 5 | Random Forest | 0,8250 | 0,8238 | 0,8250 | 0,8242 |
 | Experiment 5 | SVM | 0,7771 | 0,7886 | 0,7771 | 0,7802 |
 | Experiment 5 | KNN | 0,7887 | 0,7834 | 0,7887 | 0,7830 |
