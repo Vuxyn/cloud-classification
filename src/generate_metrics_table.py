@@ -10,12 +10,11 @@ README_PATH = PROJECT_ROOT / "README.md"
 
 
 def format_metric(val):
-    """Formats numeric metric values to percentages with two decimal places."""
     try:
         f_val = float(val)
-        if 0.0 <= f_val <= 1.0:
-            return f"{f_val * 100:.2f}%"
-        return f"{f_val:.2f}%"
+        if f_val > 1.0:
+            f_val = f_val / 100.0
+        return f"{f_val:.4f}".replace(".", ",")
     except (ValueError, TypeError):
         return val
 
