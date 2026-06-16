@@ -69,6 +69,7 @@ Jalankan berkas notebook di dalam folder `notebooks/` secara berurutan. Setiap n
 - **Experiment 6 (`06_experiment6.ipynb`)**: NRBR + HSV + GLCM (Tanpa LBP).
 - **Experiment 7 (`07_experiment7.ipynb`)**: Grayscale GLCM + Grayscale Histogram + Stats (Tanpa LBP).
 - **Experiment 8 (`08_experiment8.ipynb`)**: Detailed HSV Histograms + HSV Stats + GLCM (Tanpa LBP).
+- **Experiment 9 (`09_experiment9.ipynb`)**: CLAHE pada channel S dan V ruang warna HSV + Gaussian Filter → Grayscale → GLCM.
 
 Setiap kali notebook selesai dijalankan, hasil evaluasi model (Random Forest, SVM, KNN) akan disimpan ke `results/metrics.csv` dan script `src/generate_metrics_table.py` akan otomatis dijalankan untuk memperbarui tabel hasil di bawah ini.
 
@@ -100,9 +101,9 @@ Berikut adalah ringkasan hasil evaluasi dari setiap eksperimen yang telah dilaku
 | Experiment 4 | Random Forest | 0,5732 | 0,5592 | 0,5732 | 0,5543 |
 | Experiment 4 | SVM | 0,5547 | 0,5382 | 0,5547 | 0,5140 |
 | Experiment 4 | KNN | 0,5229 | 0,5085 | 0,5229 | 0,5083 |
-| Experiment 5 | Random Forest | 0,8250 | 0,8238 | 0,8250 | 0,8242 |
-| Experiment 5 | SVM | 0,7771 | 0,7886 | 0,7771 | 0,7802 |
-| Experiment 5 | KNN | 0,7887 | 0,7834 | 0,7887 | 0,7830 |
+| Experiment 5 | Random Forest | 0,8242 | 0,8238 | 0,8242 | 0,8237 |
+| Experiment 5 | SVM | 0,7882 | 0,8019 | 0,7882 | 0,7923 |
+| Experiment 5 | KNN | 0,7945 | 0,7894 | 0,7945 | 0,7889 |
 | Experiment 6 | Random Forest | 0,8413 | 0,8405 | 0,8413 | 0,8406 |
 | Experiment 6 | SVM | 0,7963 | 0,8066 | 0,7963 | 0,7997 |
 | Experiment 6 | KNN | 0,7861 | 0,7803 | 0,7861 | 0,7800 |
@@ -112,8 +113,25 @@ Berikut adalah ringkasan hasil evaluasi dari setiap eksperimen yang telah dilaku
 | Experiment 8 | Random Forest | 0,8413 | 0,8397 | 0,8413 | 0,8400 |
 | Experiment 8 | SVM | 0,7955 | 0,8058 | 0,7955 | 0,7989 |
 | Experiment 8 | KNN | 0,7839 | 0,7778 | 0,7839 | 0,7782 |
+| Experiment9 | Random Forest | 0,5758 | 0,5644 | 0,5758 | 0,5629 |
+| Experiment9 | SVM | 0,5632 | 0,5482 | 0,5632 | 0,5319 |
+| Experiment9 | KNN | 0,5226 | 0,5062 | 0,5226 | 0,5061 |
 
 ### Grafik Perbandingan Akurasi
 
 ![Comparison Chart](results/figures/metrics_comparison.png)
 <!-- END METRICS -->
+
+## Hasil Analisis Eksperimen
+
+- **[Analisis Baseline (Tanpa Preprocessing)](notebooks/00_baseline.ipynb#Analisis)**: Analisis performa tanpa perbaikan citra, sebagai pembanding dasar.
+- **[Analisis Experiment 1 (HE + Gaussian)](notebooks/01_experiment1.ipynb#Analisis)**: Analisis efek Global Histogram Equalization dan Gaussian blur.
+- **[Analisis Experiment 2 (CLAHE + Morph Opening)](notebooks/02_experiment2.ipynb#Analisis)**: Analisis peningkatan kontras lokal dan pembersihan noise.
+- **[Analisis Experiment 3 (Wavelet Denoise + Unsharp)](notebooks/03_experiment3.ipynb#Analisis)**: Analisis efek restorasi wavelet dan penajaman tepi.
+- **[Analisis Experiment 4 (HE + Laplacian + Closing)](notebooks/04_experiment4.ipynb#Analisis)**: Analisis deteksi tepi berbasis Laplacian.
+- **[Analisis Experiment 5 (LBP + GLCM + HSV)](notebooks/05_experiment5.ipynb#Analisis)**: Analisis kontribusi Local Binary Patterns (LBP) dan fitur warna HSV.
+- **[Analisis Experiment 6 (NRBR + HSV + GLCM)](notebooks/06_experiment6.ipynb#Analisis)**: Analisis performa Normalized Red-Blue Ratio (NRBR).
+- **[Analisis Experiment 7 (Grayscale Stats & GLCM)](notebooks/07_experiment7.ipynb#Analisis)**: Analisis performa fitur grayscale komprehensif tanpa fitur warna.
+- **[Analisis Experiment 8 (HSV Histograms + Stats + GLCM)](notebooks/08_experiment8.ipynb#Analisis)**: Analisis performa histogram HSV detail dan statistik warna.
+- **[Analisis Experiment 9 (CLAHE HSV + Gaussian)](notebooks/09_experiment9.ipynb#Analisis)**: Analisis efek CLAHE pada ruang warna HSV terhadap GLCM.
+

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import cv2
+from scipy.stats import skew, kurtosis
 
 import sys
 import os
@@ -247,17 +248,27 @@ def clahe(image: np.ndarray, tile_size: int = 8, clip_limit: float = 2.0) -> np.
 # -- FILTERING ------------------------------------------------------------------
 
 def gaussian_filter(image: np.ndarray, kernel_size: int = 5, sigma: float = 1.0) -> np.ndarray:
-    """Gaussian blur manual. Buat kernel 2D: G(x,y)=exp(-(x^2+y^2)/(2*sigma^2)), konvolusi manual."""
+    """Gaussian blur manual. Buat kernel 2D: G(x,y)=exp(-(x^2+y^2)/(2*sigma^2)), konvolusi manual.
+    Mendukung gambar grayscale (H, W) maupun warna BGR (H, W, 3)."""
     if kernel_size % 2 == 0:
         raise ValueError("kernel_size harus ganjil")
 
-    img = _to_xp(image).astype(xp.float64)
     half = kernel_size // 2
     ax = xp.arange(-half, half + 1, dtype=xp.float64)
     xx, yy = xp.meshgrid(ax, ax)
     kernel = xp.exp(-(xx ** 2 + yy ** 2) / (2.0 * sigma ** 2))
     kernel = kernel / kernel.sum()
 
+    if image.ndim == 3:
+        channels = []
+        for c in range(image.shape[2]):
+            ch = _to_xp(image[:, :, c]).astype(xp.float64)
+            ch = _convolve2d_xp(ch, kernel)
+            ch = xp.clip(ch, 0, 255).astype(xp.uint8)
+            channels.append(_to_np(ch))
+        return np.stack(channels, axis=2)
+
+    img = _to_xp(image).astype(xp.float64)
     result = _convolve2d_xp(img, kernel)
     result = xp.clip(result, 0, 255).astype(xp.uint8)
     return _to_np(result)
@@ -560,6 +571,190 @@ def wavelet_enhance(image: np.ndarray, level: int = 1, boost: float = 1.5) -> np
     return _to_np(result)
 
 
+
+def to_grayscale(image: np.ndarray) -> np.ndarray:
+    return _ensure_grayscale(image)
+
+
+def to_hsv(image: np.ndarray) -> np.ndarray:
+    return cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+
+def clahe_hsv(image: np.ndarray, tile_size: int = 8, clip_limit: float = 2.0) -> np.ndarray:
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    h, s, v = cv2.split(hsv)
+    s = clahe(s, tile_size=tile_size, clip_limit=clip_limit)
+    v = clahe(v, tile_size=tile_size, clip_limit=clip_limit)
+    return cv2.cvtColor(cv2.merge([h, s, v]), cv2.COLOR_HSV2BGR)
+
+
+def equalize_hsv(image: np.ndarray) -> np.ndarray:
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    h, s, v = cv2.split(hsv)
+    v = histogram_equalization(v)
+    return cv2.cvtColor(cv2.merge([h, s, v]), cv2.COLOR_HSV2BGR)
+
+
+def equalize_per_channel(image: np.ndarray) -> np.ndarray:
+    b, g, r = cv2.split(image)
+    b = histogram_equalization(b)
+    g = histogram_equalization(g)
+    r = histogram_equalization(r)
+    return cv2.merge([b, g, r])
+
+
+def clahe_per_channel(image: np.ndarray, tile_size: int = 8, clip_limit: float = 2.0) -> np.ndarray:
+    b, g, r = cv2.split(image)
+    b = clahe(b, tile_size=tile_size, clip_limit=clip_limit)
+    g = clahe(g, tile_size=tile_size, clip_limit=clip_limit)
+    r = clahe(r, tile_size=tile_size, clip_limit=clip_limit)
+    return cv2.merge([b, g, r])
+
+
+def calc_nrbr(image: np.ndarray) -> np.ndarray:
+    b = image[:, :, 0].astype(np.float64)
+    r = image[:, :, 2].astype(np.float64)
+    return (r - b) / (r + b + 1e-8)
+
+
+def local_binary_pattern(image: np.ndarray, P: int = 8, R: int = 1) -> np.ndarray:
+    img = _ensure_grayscale(image)
+    img_xp = _to_xp(img).astype(xp.float64)
+    h, w = img_xp.shape
+    padded = xp.pad(img_xp, ((R, R), ((R, R))), mode='reflect')
+    
+    offsets = [
+        (0, 1),
+        (-1, 1),
+        (-1, 0),
+        (-1, -1),
+        (0, -1),
+        (1, -1),
+        (1, 0),
+        (1, 1)
+    ]
+    
+    lbp_img = xp.zeros((h, w), dtype=xp.uint8)
+    center = padded[R:R+h, R:R+w]
+    
+    for i, (dy, dx) in enumerate(offsets):
+        neighbor = padded[R+dy : R+dy+h, R+dx : R+dx+w]
+        mask = (neighbor >= center).astype(xp.uint8)
+        lbp_img += mask * (1 << i)
+        
+    return _to_np(lbp_img)
+
+
+def calc_histogram(image: np.ndarray, bins: int, range_val: tuple[float, float], density: bool = False) -> np.ndarray:
+    img = _to_xp(image).astype(xp.float64)
+    min_val, max_val = range_val
+    
+    if min_val == max_val:
+        hist = xp.zeros(bins, dtype=xp.float64)
+        hist[0] = float(img.size)
+    else:
+        flat = img.ravel()
+        bin_indices = ((flat - min_val) / (max_val - min_val) * bins).astype(xp.int32)
+        bin_indices = xp.clip(bin_indices, 0, bins - 1)
+        hist = xp.bincount(bin_indices, minlength=bins).astype(xp.float64)
+        
+    if density:
+        bin_width = (max_val - min_val) / bins
+        total = hist.sum()
+        if total > 0 and bin_width > 0:
+            hist = hist / (total * bin_width)
+            
+    return _to_np(hist)
+
+
+def extract_hsv_features(images: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, list[float], list[float], list[float], list[float], list[float], list[float], list[float], list[float], list[float], list[float], list[float], list[float]]:
+    h_hists, s_hists, v_hists = [], [], []
+    h_means, h_stds, h_skews, h_kurts = [], [], [], []
+    s_means, s_stds, s_skews, s_kurts = [], [], [], []
+    v_means, v_stds, v_skews, v_kurts = [], [], [], []
+    
+    for img in images:
+        hsv = to_hsv(img)
+        
+        h_hist = calc_histogram(hsv[:, :, 0], bins=16, range_val=(0, 180), density=True)
+        s_hist = calc_histogram(hsv[:, :, 1], bins=8, range_val=(0, 256), density=True)
+        v_hist = calc_histogram(hsv[:, :, 2], bins=8, range_val=(0, 256), density=True)
+        
+        h_hists.append(h_hist)
+        s_hists.append(s_hist)
+        v_hists.append(v_hist)
+        
+        h_flat = hsv[:, :, 0].ravel()
+        h_means.append(float(np.mean(h_flat)))
+        h_stds.append(float(np.std(h_flat)))
+        h_skews.append(float(skew(h_flat)))
+        h_kurts.append(float(kurtosis(h_flat)))
+        
+        s_flat = hsv[:, :, 1].ravel()
+        s_means.append(float(np.mean(s_flat)))
+        s_stds.append(float(np.std(s_flat)))
+        s_skews.append(float(skew(s_flat)))
+        s_kurts.append(float(kurtosis(s_flat)))
+        
+        v_flat = hsv[:, :, 2].ravel()
+        v_means.append(float(np.mean(v_flat)))
+        v_stds.append(float(np.std(v_flat)))
+        v_skews.append(float(skew(v_flat)))
+        v_kurts.append(float(kurtosis(v_flat)))
+        
+    return (
+        np.array(h_hists), np.array(s_hists), np.array(v_hists),
+        h_means, h_stds, h_skews, h_kurts,
+        s_means, s_stds, s_skews, s_kurts,
+        v_means, v_stds, v_skews, v_kurts
+    )
+
+
+def extract_nrbr_features(images: np.ndarray) -> tuple[np.ndarray, list[float], list[float], list[float], list[float]]:
+    nrbr_hists = []
+    nrbr_means, nrbr_stds, nrbr_skews, nrbr_kurts = [], [], [], []
+    
+    for img in images:
+        nrbr = calc_nrbr(img)
+        
+        nrbr_hist = calc_histogram(nrbr, bins=16, range_val=(-1.0, 1.0), density=True)
+        nrbr_hists.append(nrbr_hist)
+        
+        nrbr_flat = nrbr.ravel()
+        nrbr_means.append(float(np.mean(nrbr_flat)))
+        nrbr_stds.append(float(np.std(nrbr_flat)))
+        nrbr_skews.append(float(skew(nrbr_flat)))
+        nrbr_kurts.append(float(kurtosis(nrbr_flat)))
+        
+    return np.array(nrbr_hists), nrbr_means, nrbr_stds, nrbr_skews, nrbr_kurts
+
+
+def extract_lbp_features(images: np.ndarray, bins: int = 8) -> np.ndarray:
+    lbp_hists = []
+    for img in images:
+        lbp = local_binary_pattern(img)
+        lbp_hist = calc_histogram(lbp, bins=bins, range_val=(0, 256), density=True)
+        lbp_hists.append(lbp_hist)
+    return np.array(lbp_hists)
+
+
+def extract_grayscale_stats(images_gray: np.ndarray) -> tuple[np.ndarray, list[float], list[float], list[float], list[float]]:
+    gray_hists = []
+    gray_means, gray_stds, gray_skews, gray_kurts = [], [], [], []
+    
+    for img in images_gray:
+        gray_hist = calc_histogram(img, bins=16, range_val=(0, 256), density=True)
+        gray_hists.append(gray_hist)
+        
+        flat = img.ravel()
+        gray_means.append(float(np.mean(flat)))
+        gray_stds.append(float(np.std(flat)))
+        gray_skews.append(float(skew(flat)))
+        gray_kurts.append(float(kurtosis(flat)))
+        
+    return np.array(gray_hists), gray_means, gray_stds, gray_skews, gray_kurts
+
+
 if __name__ == "__main__":
     dummy = np.random.randint(0, 256, (128, 128), dtype=np.uint8)
     dummy_rgb = np.random.randint(0, 256, (128, 128, 3), dtype=np.uint8)
@@ -585,18 +780,41 @@ if __name__ == "__main__":
         "top_hat": lambda: top_hat(dummy, 15),
         "haar_wavelet_denoise": lambda: haar_wavelet_denoise(dummy, 1, 20.0),
         "wavelet_enhance": lambda: wavelet_enhance(dummy, 1, 1.5),
+        "to_grayscale": lambda: to_grayscale(dummy_rgb),
+        "to_hsv": lambda: to_hsv(dummy_rgb),
+        "clahe_hsv": lambda: clahe_hsv(dummy_rgb),
+        "equalize_hsv": lambda: equalize_hsv(dummy_rgb),
+        "equalize_per_channel": lambda: equalize_per_channel(dummy_rgb),
+        "clahe_per_channel": lambda: clahe_per_channel(dummy_rgb),
+        "calc_nrbr": lambda: calc_nrbr(dummy_rgb),
+        "local_binary_pattern": lambda: local_binary_pattern(dummy),
+        "calc_histogram": lambda: calc_histogram(dummy, 16, (0, 256)),
+        "extract_hsv_features": lambda: extract_hsv_features(np.array([dummy_rgb])),
+        "extract_nrbr_features": lambda: extract_nrbr_features(np.array([dummy_rgb])),
+        "extract_lbp_features": lambda: extract_lbp_features(np.array([dummy])),
+        "extract_grayscale_stats": lambda: extract_grayscale_stats(np.array([dummy])),
     }
 
     for name, fn in tests.items():
         try:
             result = fn()
-            if isinstance(result, tuple):
-                img_result, _ = result
-                assert img_result.shape == dummy.shape or name == "_ensure_grayscale"
-            elif name == "_ensure_grayscale":
+            if name == "to_hsv":
+                assert result.shape == (128, 128, 3)
+            elif name == "calc_histogram":
+                assert result.shape == (16,)
+            elif name == "extract_lbp_features":
+                assert result.shape == (1, 8)
+            elif name in ("clahe_hsv", "equalize_hsv", "equalize_per_channel", "clahe_per_channel"):
+                assert result.shape == (128, 128, 3)
+            elif isinstance(result, tuple):
+                img_result = result[0]
+                assert img_result.shape == dummy.shape or name == "_ensure_grayscale" or len(result) > 2
+            elif name == "_ensure_grayscale" or name == "to_grayscale" or name == "local_binary_pattern":
                 assert result.shape == (128, 128)
             else:
                 assert result.shape == dummy.shape
             print(f"[OK] {name} OK")
         except Exception as exc:
+            import traceback
             print(f"[FAIL] {name} FAILED: {exc}")
+            traceback.print_exc()
