@@ -86,33 +86,33 @@ Berikut adalah ringkasan hasil evaluasi dari setiap eksperimen yang telah dilaku
 <!-- BEGIN METRICS -->
 | Experiment | Classifier | Accuracy | Precision | Recall | F1-Score |
 |---|---|---|---|---|---|
-| Baseline | Random Forest | 0,5579 | 0,5503 | 0,5579 | 0,5493 |
-| Baseline | SVM | 0,5242 | 0,5194 | 0,5242 | 0,5006 |
-| Baseline | KNN | 0,5129 | 0,5037 | 0,5129 | 0,5025 |
-| Experiment 1 | Random Forest | 0,5455 | 0,5295 | 0,5455 | 0,5241 |
-| Experiment 1 | SVM | 0,5305 | 0,5068 | 0,5305 | 0,4698 |
-| Experiment 1 | KNN | 0,4924 | 0,4698 | 0,4924 | 0,4721 |
-| Experiment 2 | Random Forest | 0,5924 | 0,5789 | 0,5924 | 0,5807 |
-| Experiment 2 | SVM | 0,5845 | 0,5660 | 0,5845 | 0,5553 |
-| Experiment 2 | KNN | 0,5511 | 0,5362 | 0,5511 | 0,5389 |
-| Experiment 3 | Random Forest | 0,5789 | 0,5656 | 0,5789 | 0,5658 |
-| Experiment 3 | SVM | 0,5539 | 0,5388 | 0,5539 | 0,5181 |
-| Experiment 3 | KNN | 0,5247 | 0,5106 | 0,5247 | 0,5119 |
-| Experiment 4 | Random Forest | 0,5732 | 0,5592 | 0,5732 | 0,5543 |
-| Experiment 4 | SVM | 0,5547 | 0,5382 | 0,5547 | 0,5140 |
-| Experiment 4 | KNN | 0,5229 | 0,5085 | 0,5229 | 0,5083 |
-| Experiment 5 | Random Forest | 0,8242 | 0,8238 | 0,8242 | 0,8237 |
-| Experiment 5 | SVM | 0,7882 | 0,8019 | 0,7882 | 0,7923 |
-| Experiment 5 | KNN | 0,7945 | 0,7894 | 0,7945 | 0,7889 |
-| Experiment 6 | Random Forest | 0,8413 | 0,8405 | 0,8413 | 0,8406 |
-| Experiment 6 | SVM | 0,7963 | 0,8066 | 0,7963 | 0,7997 |
-| Experiment 6 | KNN | 0,7861 | 0,7803 | 0,7861 | 0,7800 |
-| Experiment 7 | Random Forest | 0,6589 | 0,6599 | 0,6589 | 0,6575 |
-| Experiment 7 | SVM | 0,6200 | 0,6332 | 0,6200 | 0,6140 |
-| Experiment 7 | KNN | 0,6176 | 0,6125 | 0,6176 | 0,6106 |
-| Experiment 8 | Random Forest | 0,8413 | 0,8397 | 0,8413 | 0,8400 |
-| Experiment 8 | SVM | 0,7955 | 0,8058 | 0,7955 | 0,7989 |
-| Experiment 8 | KNN | 0,7839 | 0,7778 | 0,7839 | 0,7782 |
+| Baseline | Random Forest | 0,5400 | 0,5317 | 0,5400 | 0,5311 |
+| Baseline | SVM | 0,5079 | 0,5131 | 0,5079 | 0,4839 |
+| Baseline | KNN | 0,4866 | 0,4822 | 0,4866 | 0,4783 |
+| Experiment 1 | Random Forest | 0,5321 | 0,5196 | 0,5321 | 0,5161 |
+| Experiment 1 | SVM | 0,5332 | 0,5322 | 0,5332 | 0,4934 |
+| Experiment 1 | KNN | 0,4837 | 0,4647 | 0,4837 | 0,4648 |
+| Experiment 2 | Random Forest | 0,5534 | 0,5371 | 0,5534 | 0,5405 |
+| Experiment 2 | SVM | 0,5408 | 0,5290 | 0,5408 | 0,5129 |
+| Experiment 2 | KNN | 0,5163 | 0,5035 | 0,5163 | 0,5051 |
+| Experiment 3 | Random Forest | 0,5618 | 0,5505 | 0,5618 | 0,5510 |
+| Experiment 3 | SVM | 0,5271 | 0,5173 | 0,5271 | 0,4970 |
+| Experiment 3 | KNN | 0,4982 | 0,4888 | 0,4982 | 0,4880 |
+| Experiment 4 | Random Forest | 0,5147 | 0,5032 | 0,5147 | 0,5015 |
+| Experiment 4 | SVM | 0,5166 | 0,5051 | 0,5166 | 0,4785 |
+| Experiment 4 | KNN | 0,4763 | 0,4663 | 0,4763 | 0,4654 |
+| Experiment 5 | Random Forest | 0,8213 | 0,8217 | 0,8213 | 0,8211 |
+| Experiment 5 | SVM | 0,7876 | 0,8023 | 0,7876 | 0,7921 |
+| Experiment 5 | KNN | 0,7829 | 0,7763 | 0,7829 | 0,7765 |
+| Experiment 6 | Random Forest | 0,8297 | 0,8296 | 0,8297 | 0,8293 |
+| Experiment 6 | SVM | 0,7932 | 0,8021 | 0,7932 | 0,7960 |
+| Experiment 6 | KNN | 0,7803 | 0,7732 | 0,7803 | 0,7741 |
+| Experiment 7 | Random Forest | 0,6558 | 0,6547 | 0,6558 | 0,6531 |
+| Experiment 7 | SVM | 0,6092 | 0,6212 | 0,6092 | 0,6035 |
+| Experiment 7 | KNN | 0,6211 | 0,6154 | 0,6211 | 0,6132 |
+| Experiment 8 | Random Forest | 0,8321 | 0,8312 | 0,8321 | 0,8314 |
+| Experiment 8 | SVM | 0,7918 | 0,8008 | 0,7918 | 0,7947 |
+| Experiment 8 | KNN | 0,7766 | 0,7696 | 0,7766 | 0,7703 |
 | Experiment9 | Random Forest | 0,5758 | 0,5644 | 0,5758 | 0,5629 |
 | Experiment9 | SVM | 0,5632 | 0,5482 | 0,5632 | 0,5319 |
 | Experiment9 | KNN | 0,5226 | 0,5062 | 0,5226 | 0,5061 |
