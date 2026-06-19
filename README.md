@@ -74,16 +74,15 @@ Pastikan struktur direktori utama adalah sebagai berikut:
 ### 3. Menjalankan Notebook Eksperimen
 Jalankan berkas notebook di dalam folder `notebooks/` secara berurutan. Setiap notebook merepresentasikan eksperimen dengan konfigurasi preprocessing dan ekstraksi fitur yang berbeda:
 
-- **Baseline (`00_baseline.ipynb`)**: Tanpa preprocessing tambahan.
-- **Experiment 1 (`01_experiment1.ipynb`)**: Histogram Equalization + Gaussian Filter.
-- **Experiment 2 (`02_experiment2.ipynb`)**: CLAHE + Morphological Opening.
-- **Experiment 3 (`03_experiment3.ipynb`)**: Haar Wavelet Denoise + Unsharp Mask.
-- **Experiment 4 (`04_experiment4.ipynb`)**: Histogram Equalization + Edge + Morfologi.
-- **Experiment 5 (`05_experiment5.ipynb`)**: Eksperimen LBP (Local Binary Patterns) pada subset kecil.
-- **Experiment 6 (`06_experiment6.ipynb`)**: NRBR + HSV + GLCM (Tanpa LBP).
-- **Experiment 7 (`07_experiment7.ipynb`)**: Grayscale GLCM + Grayscale Histogram + Stats (Tanpa LBP).
-- **Experiment 8 (`08_experiment8.ipynb`)**: Detailed HSV Histograms + HSV Stats + GLCM (Tanpa LBP).
-- **Experiment 9 (`09_experiment9.ipynb`)**: CLAHE pada channel S dan V ruang warna HSV + Gaussian Filter → Grayscale → GLCM.
+- **Baseline (`00_baseline.ipynb`)**: Tanpa preprocessing tambahan (hanya grayscale + resize). Fitur: GLCM.
+- **Experiment 1 (`01_experiment1.ipynb`)**: Menambahkan statistik warna HSV (Mean, Std Dev, Skewness, Kurtosis) langsung dari gambar asli dikombinasikan dengan GLCM.
+- **Experiment 2 (`02_experiment2.ipynb`)**: Menambahkan fitur warna NRBR (Normalized Red-Blue Ratio) serta histogram & statistik HSV + GLCM.
+- **Experiment 3 (`03_experiment3.ipynb`)**: Fitur histogram intensitas keabuan (16 bin) dan statistik orde pertama (mean, std, skewness, kurtosis) + GLCM (tanpa fitur warna).
+- **Experiment 4 (`04_experiment4.ipynb`)**: Fitur histogram HSV (32 bin) dan statistik warna orde pertama + GLCM.
+- **Experiment 5 (`05_experiment5.ipynb`)**: Preprocessing Enhancement (CLAHE pada channel S dan V ruang warna HSV + Gaussian Blur) + Fitur HSV Histogram & Stats + GLCM.
+- **Experiment 6 (`06_experiment6.ipynb`)**: Preprocessing Pipeline: Normalisasi Min-Max + CLAHE pada channel S dan V + Gamma Correction + Fitur HSV Histogram & Stats + GLCM.
+- **Experiment 7 (`07_experiment7.ipynb`)**: Preprocessing Pipeline lengkap: Normalisasi Min-Max + CLAHE pada channel S dan V + Gaussian Blur + Gamma Correction + Fitur HSV Histogram & Stats + GLCM.
+- **Experiment 8 (`08_experiment8.ipynb`)**: Preprocessing bertahap: Gray World White Balance + Bilateral Filter + CLAHE + Fitur Statistik Warna RGB (Mean, Std, Skewness) & GLCM + Feature Selection (korelasi >= 0.95).
 
 Setiap kali notebook selesai dijalankan, hasil evaluasi model (Random Forest, SVM, KNN) akan disimpan ke `results/metrics.csv` dan script `src/generate_metrics_table.py` akan otomatis dijalankan untuk memperbarui tabel hasil di bawah ini.
 
@@ -135,14 +134,15 @@ Berikut adalah ringkasan hasil evaluasi dari setiap eksperimen yang telah dilaku
 
 ## Hasil Analisis Eksperimen
 
-- **[Analisis Baseline (Tanpa Preprocessing)](notebooks/00_baseline.ipynb#Analisis)**: Analisis performa tanpa perbaikan citra, sebagai pembanding dasar.
-- **[Analisis Experiment 1 (LBP + GLCM + HSV)](notebooks/01_experiment1.ipynb#Analisis)**: Analisis kontribusi Local Binary Patterns (LBP) dan statistik warna HSV.
-- **[Analisis Experiment 2 (NRBR + HSV + GLCM)](notebooks/02_experiment2.ipynb#Analisis)**: Analisis performa Normalized Red-Blue Ratio (NRBR).
-- **[Analisis Experiment 3 (Grayscale Stats & GLCM)](notebooks/03_experiment3.ipynb#Analisis)**: Analisis performa fitur grayscale komprehensif tanpa fitur warna.
-- **[Analisis Experiment 4 (HSV Histograms + Stats + GLCM)](notebooks/04_experiment4.ipynb#Analisis)**: Analisis performa histogram HSV detail dan statistik warna.
-- **[Analisis Experiment 5 (CLAHE HSV + Gaussian)](notebooks/05_experiment5.ipynb#Analisis)**: Analisis kombinasi CLAHE pada ruang warna HSV dan Gaussian filter.
-- **[Analisis Experiment 6 (Resize + Normalisasi + CLAHE + Gamma)](notebooks/06_experiment6.ipynb#Analisis)**: Analisis efek normalisasi global dan koreksi gamma pada fitur warna.
-- **[Analisis Experiment 7 (Resize + Normalisasi + CLAHE + Gaussian + Gamma)](notebooks/07_experiment7.ipynb#Analisis)**: Analisis efek penambahan Gaussian Blur untuk meredam amplifikasi noise akibat koreksi gamma.
+- **[Analisis Baseline (Tanpa Preprocessing)](notebooks/00_baseline.ipynb#Analisis)**: Analisis performa awal menggunakan tekstur GLCM dasar sebagai baseline pembanding.
+- **[Analisis Experiment 1 (GLCM + HSV Stats)](notebooks/01_experiment1.ipynb#Analisis)**: Analisis pengaruh statistik warna HSV terhadap model klasifikasi.
+- **[Analisis Experiment 2 (NRBR + HSV + GLCM)](notebooks/02_experiment2.ipynb#Analisis)**: Analisis performa rasio warna Normalized Red-Blue Ratio (NRBR) dan visualisasinya.
+- **[Analisis Experiment 3 (Grayscale Histogram + Stats)](notebooks/03_experiment3.ipynb#Analisis)**: Analisis efektivitas histogram keabuan dan statistik orde pertama tanpa fitur warna.
+- **[Analisis Experiment 4 (HSV Histograms + Stats + GLCM)](notebooks/04_experiment4.ipynb#Analisis)**: Analisis performa histogram warna HSV 32 bin yang digabungkan dengan statistik warna.
+- **[Analisis Experiment 5 (CLAHE HSV + Gaussian)](notebooks/05_experiment5.ipynb#Analisis)**: Analisis teknik peningkatan kontras lokal (CLAHE) pada channel saturasi/value ruang warna HSV beserta peredaman noise Gaussian.
+- **[Analisis Experiment 6 (Min-Max Normalization + CLAHE + Gamma)](notebooks/06_experiment6.ipynb#Analisis)**: Analisis efek normalisasi kontras global dan koreksi gamma (kecerahan) pada performa akurasi.
+- **[Analisis Experiment 7 (Min-Max Normalization + CLAHE + Gaussian + Gamma)](notebooks/07_experiment7.ipynb#Analisis)**: Analisis performa dengan penambahan Gaussian Blur setelah CLAHE untuk meredam noise sebelum koreksi gamma.
+- **[Analisis Experiment 8 (White Balance + Bilateral + CLAHE + RGB Stats + Feature Selection)](notebooks/08_experiment8.ipynb#Analisis)**: Analisis efek restorasi iluminasi (Gray World), bilateral filtering, statistik warna RGB, dan reduksi dimensi (korelasi >= 0.95).
 
 
 
