@@ -2,6 +2,20 @@
 
 Sistem klasifikasi citra awan berbasis pemrosesan citra digital tradisional (preprocessing manual, ekstraksi fitur warna dan tekstur, serta klasifikasi menggunakan Random Forest, SVM, dan KNN).
 
+## Contoh Dataset (Dataset Examples)
+
+Dataset Ground-based Cloud Dataset (GCD) memiliki 7 kelas awan. Berikut adalah contoh visualisasi dari masing-masing kelas:
+
+| Kelas | Citra Contoh | Deskripsi |
+| :--- | :---: | :--- |
+| **1. Cumulus** | ![Cumulus](results/figures/dataset_examples/cumulus.jpg) | Awan rendah yang tebal bergumpal seperti kapas dengan batas yang jelas. |
+| **2. Altocumulus** | ![Altocumulus](results/figures/dataset_examples/altocumulus.jpg) | Awan menengah berbentuk bulatan kecil bergumpal atau bergelombang abu-abu/putih. |
+| **3. Cirrus** | ![Cirrus](results/figures/dataset_examples/cirrus.jpg) | Awan tinggi yang tipis dan lembut seperti serat atau bulu burung. |
+| **4. Clear Sky** | ![Clear Sky](results/figures/dataset_examples/clearsky.jpg) | Langit cerah tanpa awan atau awan sangat minim (didominasi warna biru). |
+| **5. Stratocumulus** | ![Stratocumulus](results/figures/dataset_examples/stratocumulus.jpg) | Awan rendah berupa lembaran atau lapisan kasar bergelombang abu-abu/putih. |
+| **6. Cumulonimbus** | ![Cumulonimbus](results/figures/dataset_examples/cumulonimbus.jpg) | Awan mendung/badai tebal yang menjulang tinggi, berpotensi hujan dan petir. |
+| **7. Mixed** | ![Mixed](results/figures/dataset_examples/mixed.jpg) | Kondisi langit campuran yang memiliki beberapa jenis awan sekaligus. |
+
 ## Tools dan Dependensi
 
 ### Persyaratan Sistem
