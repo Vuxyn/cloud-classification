@@ -17,6 +17,7 @@ build/
 results/figures/*.png
 !results/figures/metrics_comparison.png
 notebooks/hasil_ekstraksi_*.csv
+notebooks/viz_*.png
 
 # metrics.csv SENGAJA di-track — tabel perbandingan experiment tim
 # results/metrics.csv

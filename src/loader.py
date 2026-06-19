@@ -127,11 +127,18 @@ def get_dataset_root() -> Path:
     raise FileNotFoundError("Dataset root tidak ditemukan. Lihat instruksi di atas.")
 
 
-def load_dataset(root_dir: Path, target_size: tuple = (128, 128), color: bool = False) -> tuple:
+def load_dataset(
+    root_dir: Path,
+    target_size: tuple = (128, 128),
+    color: bool = False,
+    max_per_class: int | None = 1250,
+    seed: int = 42
+) -> tuple:
     """
     Load semua gambar dari struktur: root_dir/{train,test}/label_name/image.jpg
 
     - Gabungkan train dan test (klasifikasi ulang dengan split manual di notebook)
+    - Batasi jumlah gambar per kelas jika max_per_class ditentukan (untuk meratakan kelas)
     - Konversi ke grayscale jika color=False menggunakan _ensure_grayscale dari image_processing.py
     - Resize dengan cv2.resize ke target_size
     - Tampilkan tqdm progress bar per label
@@ -159,6 +166,9 @@ def load_dataset(root_dir: Path, target_size: tuple = (128, 128), color: bool = 
             raise ValueError(f"Tidak ada subfolder train/test atau label di: {root}")
         splits = [root]
 
+    # Kumpulkan semua file gambar per kelas terlebih dahulu untuk memudahkan random sampling
+    class_to_paths: dict[str, list[Path]] = {}
+
     for split_dir in splits:
         label_dirs = sorted([d for d in split_dir.iterdir() if d.is_dir()])
         for label_dir in label_dirs:
@@ -166,28 +176,43 @@ def load_dataset(root_dir: Path, target_size: tuple = (128, 128), color: bool = 
             parts = label_name.split("_", 1)
             class_name = parts[1] if len(parts) > 1 else label_name
 
-            img_files = sorted([
+            img_files = [
                 f for f in label_dir.iterdir()
                 if f.is_file() and f.suffix.lower() in image_exts
-            ])
+            ]
+            if class_name not in class_to_paths:
+                class_to_paths[class_name] = []
+            class_to_paths[class_name].extend(img_files)
 
-            for img_path in tqdm(img_files, desc=f"Loading {class_name}", leave=False):
-                img = cv2.imread(str(img_path))
-                if img is None:
-                    print(f"PERINGATAN: Gagal membaca gambar, dilewati: {img_path}")
-                    continue
+    # Lakukan sorting dan random sampling (jika max_per_class diset) untuk setiap kelas
+    import random
+    class_names = sorted(class_to_paths.keys())
 
-                if not color:
-                    img = _ensure_grayscale(img)
-                img = cv2.resize(
-                    img,
-                    (target_size[1], target_size[0]),
-                    interpolation=cv2.INTER_LINEAR,
-                )
+    for class_name in class_names:
+        paths = sorted(class_to_paths[class_name])
+        
+        if max_per_class is not None and len(paths) > max_per_class:
+            rng = random.Random(seed)
+            rng.shuffle(paths)
+            paths = paths[:max_per_class]
 
-                images_list.append(img)
-                labels_list.append(class_name)
-                filenames_list.append(img_path.name)
+        for img_path in tqdm(paths, desc=f"Loading {class_name}", leave=False):
+            img = cv2.imread(str(img_path))
+            if img is None:
+                print(f"PERINGATAN: Gagal membaca gambar, dilewati: {img_path}")
+                continue
+
+            if not color:
+                img = _ensure_grayscale(img)
+            img = cv2.resize(
+                img,
+                (target_size[1], target_size[0]),
+                interpolation=cv2.INTER_LINEAR,
+            )
+
+            images_list.append(img)
+            labels_list.append(class_name)
+            filenames_list.append(img_path.name)
 
     if not images_list:
         raise ValueError(f"Tidak ada gambar yang berhasil dimuat dari: {root}")

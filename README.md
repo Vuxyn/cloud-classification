@@ -86,36 +86,33 @@ Berikut adalah ringkasan hasil evaluasi dari setiap eksperimen yang telah dilaku
 <!-- BEGIN METRICS -->
 | Experiment | Classifier | Accuracy | Precision | Recall | F1-Score |
 |---|---|---|---|---|---|
-| Baseline | Random Forest | 0,5400 | 0,5317 | 0,5400 | 0,5311 |
-| Baseline | SVM | 0,5079 | 0,5131 | 0,5079 | 0,4839 |
-| Baseline | KNN | 0,4866 | 0,4822 | 0,4866 | 0,4783 |
-| Experiment 1 | Random Forest | 0,5321 | 0,5196 | 0,5321 | 0,5161 |
-| Experiment 1 | SVM | 0,5332 | 0,5322 | 0,5332 | 0,4934 |
-| Experiment 1 | KNN | 0,4837 | 0,4647 | 0,4837 | 0,4648 |
-| Experiment 2 | Random Forest | 0,5534 | 0,5371 | 0,5534 | 0,5405 |
-| Experiment 2 | SVM | 0,5408 | 0,5290 | 0,5408 | 0,5129 |
-| Experiment 2 | KNN | 0,5163 | 0,5035 | 0,5163 | 0,5051 |
-| Experiment 3 | Random Forest | 0,5618 | 0,5505 | 0,5618 | 0,5510 |
-| Experiment 3 | SVM | 0,5271 | 0,5173 | 0,5271 | 0,4970 |
-| Experiment 3 | KNN | 0,4982 | 0,4888 | 0,4982 | 0,4880 |
-| Experiment 4 | Random Forest | 0,5147 | 0,5032 | 0,5147 | 0,5015 |
-| Experiment 4 | SVM | 0,5166 | 0,5051 | 0,5166 | 0,4785 |
-| Experiment 4 | KNN | 0,4763 | 0,4663 | 0,4763 | 0,4654 |
-| Experiment 5 | Random Forest | 0,8213 | 0,8217 | 0,8213 | 0,8211 |
-| Experiment 5 | SVM | 0,7876 | 0,8023 | 0,7876 | 0,7921 |
-| Experiment 5 | KNN | 0,7829 | 0,7763 | 0,7829 | 0,7765 |
-| Experiment 6 | Random Forest | 0,8297 | 0,8296 | 0,8297 | 0,8293 |
-| Experiment 6 | SVM | 0,7932 | 0,8021 | 0,7932 | 0,7960 |
-| Experiment 6 | KNN | 0,7803 | 0,7732 | 0,7803 | 0,7741 |
-| Experiment 7 | Random Forest | 0,6558 | 0,6547 | 0,6558 | 0,6531 |
-| Experiment 7 | SVM | 0,6092 | 0,6212 | 0,6092 | 0,6035 |
-| Experiment 7 | KNN | 0,6211 | 0,6154 | 0,6211 | 0,6132 |
-| Experiment 8 | Random Forest | 0,8321 | 0,8312 | 0,8321 | 0,8314 |
-| Experiment 8 | SVM | 0,7918 | 0,8008 | 0,7918 | 0,7947 |
-| Experiment 8 | KNN | 0,7766 | 0,7696 | 0,7766 | 0,7703 |
-| Experiment9 | Random Forest | 0,5758 | 0,5644 | 0,5758 | 0,5629 |
-| Experiment9 | SVM | 0,5632 | 0,5482 | 0,5632 | 0,5319 |
-| Experiment9 | KNN | 0,5226 | 0,5062 | 0,5226 | 0,5061 |
+| Baseline | Random Forest | 0,5139 | 0,5144 | 0,5139 | 0,5133 |
+| Baseline | SVM | 0,4985 | 0,5287 | 0,4985 | 0,5049 |
+| Baseline | KNN | 0,4796 | 0,4799 | 0,4796 | 0,4771 |
+| Experiment 1 | Random Forest | 0,7812 | 0,7807 | 0,7812 | 0,7805 |
+| Experiment 1 | SVM | 0,7552 | 0,7601 | 0,7552 | 0,7559 |
+| Experiment 1 | KNN | 0,7238 | 0,7228 | 0,7238 | 0,7202 |
+| Experiment 2 | Random Forest | 0,7812 | 0,7808 | 0,7812 | 0,7806 |
+| Experiment 2 | SVM | 0,7433 | 0,7443 | 0,7433 | 0,7430 |
+| Experiment 2 | KNN | 0,6895 | 0,6867 | 0,6895 | 0,6855 |
+| Experiment 3 | Random Forest | 0,6558 | 0,6547 | 0,6558 | 0,6531 |
+| Experiment 3 | SVM | 0,6092 | 0,6212 | 0,6092 | 0,6035 |
+| Experiment 3 | KNN | 0,6211 | 0,6154 | 0,6211 | 0,6132 |
+| Experiment 4 | Random Forest | 0,8321 | 0,8312 | 0,8321 | 0,8314 |
+| Experiment 4 | SVM | 0,7918 | 0,8008 | 0,7918 | 0,7947 |
+| Experiment 4 | KNN | 0,7766 | 0,7696 | 0,7766 | 0,7703 |
+| Experiment 5 | Random Forest | 0,8190 | 0,8190 | 0,8190 | 0,8187 |
+| Experiment 5 | SVM | 0,8255 | 0,8260 | 0,8255 | 0,8254 |
+| Experiment 5 | KNN | 0,7776 | 0,7791 | 0,7776 | 0,7768 |
+| Experiment 6 | Random Forest | 0,7818 | 0,7802 | 0,7818 | 0,7795 |
+| Experiment 6 | SVM | 0,7877 | 0,7869 | 0,7877 | 0,7868 |
+| Experiment 6 | KNN | 0,7345 | 0,7318 | 0,7345 | 0,7315 |
+| Experiment 7 | Random Forest | 0,7788 | 0,7756 | 0,7788 | 0,7764 |
+| Experiment 7 | SVM | 0,8025 | 0,8017 | 0,8025 | 0,8011 |
+| Experiment 7 | KNN | 0,7487 | 0,7465 | 0,7487 | 0,7464 |
+| Experiment 8 | Random Forest | 0,7002 | 0,7011 | 0,7002 | 0,6994 |
+| Experiment 8 | SVM | 0,6558 | 0,6622 | 0,6558 | 0,6515 |
+| Experiment 8 | KNN | 0,6434 | 0,6470 | 0,6434 | 0,6425 |
 
 ### Grafik Perbandingan Akurasi
 
@@ -125,13 +122,13 @@ Berikut adalah ringkasan hasil evaluasi dari setiap eksperimen yang telah dilaku
 ## Hasil Analisis Eksperimen
 
 - **[Analisis Baseline (Tanpa Preprocessing)](notebooks/00_baseline.ipynb#Analisis)**: Analisis performa tanpa perbaikan citra, sebagai pembanding dasar.
-- **[Analisis Experiment 1 (HE + Gaussian)](notebooks/01_experiment1.ipynb#Analisis)**: Analisis efek Global Histogram Equalization dan Gaussian blur.
-- **[Analisis Experiment 2 (CLAHE + Morph Opening)](notebooks/02_experiment2.ipynb#Analisis)**: Analisis peningkatan kontras lokal dan pembersihan noise.
-- **[Analisis Experiment 3 (Wavelet Denoise + Unsharp)](notebooks/03_experiment3.ipynb#Analisis)**: Analisis efek restorasi wavelet dan penajaman tepi.
-- **[Analisis Experiment 4 (HE + Laplacian + Closing)](notebooks/04_experiment4.ipynb#Analisis)**: Analisis deteksi tepi berbasis Laplacian.
-- **[Analisis Experiment 5 (LBP + GLCM + HSV)](notebooks/05_experiment5.ipynb#Analisis)**: Analisis kontribusi Local Binary Patterns (LBP) dan fitur warna HSV.
-- **[Analisis Experiment 6 (NRBR + HSV + GLCM)](notebooks/06_experiment6.ipynb#Analisis)**: Analisis performa Normalized Red-Blue Ratio (NRBR).
-- **[Analisis Experiment 7 (Grayscale Stats & GLCM)](notebooks/07_experiment7.ipynb#Analisis)**: Analisis performa fitur grayscale komprehensif tanpa fitur warna.
-- **[Analisis Experiment 8 (HSV Histograms + Stats + GLCM)](notebooks/08_experiment8.ipynb#Analisis)**: Analisis performa histogram HSV detail dan statistik warna.
-- **[Analisis Experiment 9 (CLAHE HSV + Gaussian)](notebooks/09_experiment9.ipynb#Analisis)**: Analisis efek CLAHE pada ruang warna HSV terhadap GLCM.
+- **[Analisis Experiment 1 (LBP + GLCM + HSV)](notebooks/01_experiment1.ipynb#Analisis)**: Analisis kontribusi Local Binary Patterns (LBP) dan statistik warna HSV.
+- **[Analisis Experiment 2 (NRBR + HSV + GLCM)](notebooks/02_experiment2.ipynb#Analisis)**: Analisis performa Normalized Red-Blue Ratio (NRBR).
+- **[Analisis Experiment 3 (Grayscale Stats & GLCM)](notebooks/03_experiment3.ipynb#Analisis)**: Analisis performa fitur grayscale komprehensif tanpa fitur warna.
+- **[Analisis Experiment 4 (HSV Histograms + Stats + GLCM)](notebooks/04_experiment4.ipynb#Analisis)**: Analisis performa histogram HSV detail dan statistik warna.
+- **[Analisis Experiment 5 (CLAHE HSV + Gaussian)](notebooks/05_experiment5.ipynb#Analisis)**: Analisis kombinasi CLAHE pada ruang warna HSV dan Gaussian filter.
+- **[Analisis Experiment 6 (Resize + Normalisasi + CLAHE + Gamma)](notebooks/06_experiment6.ipynb#Analisis)**: Analisis efek normalisasi global dan koreksi gamma pada fitur warna.
+- **[Analisis Experiment 7 (Resize + Normalisasi + CLAHE + Gaussian + Gamma)](notebooks/07_experiment7.ipynb#Analisis)**: Analisis efek penambahan Gaussian Blur untuk meredam amplifikasi noise akibat koreksi gamma.
+
+
 

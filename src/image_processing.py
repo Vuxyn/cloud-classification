@@ -7,19 +7,28 @@ from scipy.stats import skew, kurtosis
 import sys
 import os
 
+try:
+    from numba import njit, prange
+    HAS_NUMBA = True
+except ImportError:
+    HAS_NUMBA = False
+
 if 'google.colab' in sys.modules or os.path.exists('/usr/local/cuda'):
     os.environ['CUDA_PATH'] = '/usr/local/cuda'
 
 try:
     import cupy as cp
     cp.cuda.Device(0).use()
+    # Test compiled operation to ensure CUDA toolkit headers are present and working
+    dummy = cp.array([0, 1], dtype=cp.int32)
+    cp.bincount(dummy)
     xp = cp
     USING_GPU = True
     print("CuPy aktif - komputasi berjalan di GPU")
-except Exception:
+except Exception as e:
     xp = np
     USING_GPU = False
-    print("CuPy tidak tersedia - fallback ke NumPy (CPU)")
+    print(f"CuPy tidak aktif atau tidak berfungsi (fallback ke CPU/NumPy): {e}")
 
 
 def _to_xp(image: np.ndarray):
@@ -154,6 +163,111 @@ def histogram_equalization(image: np.ndarray) -> np.ndarray:
     result = lut[img.ravel()].reshape(h, w)
     return _to_np(result)
 
+def histogram_spesifcation(image: np.ndarray) -> np.ndarray:
+    """Global HE menggunakan CDF. Hitung histogram -> CDF -> LUT -> apply."""
+    img = _to_xp(image).astype(xp.uint8)
+    h, w = img.shape
+
+    hist = _histogram_256(img)
+    cdf = xp.cumsum(hist)
+    total_pixels = h * w
+    lut = xp.round(cdf * 255.0 / total_pixels).astype(xp.uint8)
+
+    result = lut[img.ravel()].reshape(h, w)
+    return _to_np(result)
+
+if HAS_NUMBA:
+    @njit(parallel=True, fastmath=True)
+    def _clahe_numba(img, tile_h, tile_w, tile_size, clip_limit):
+        h, w = img.shape
+        luts = np.zeros((tile_size, tile_size, 256), dtype=np.float64)
+        tile_area = tile_h * tile_w
+        clip_val = clip_limit * (tile_area / 256.0)
+
+        # 1. Compute LUTs for each tile
+        for ti in range(tile_size):
+            for tj in range(tile_size):
+                y0 = ti * tile_h
+                x0 = tj * tile_w
+                
+                # Compute histogram
+                hist = np.zeros(256, dtype=np.float64)
+                for y in range(y0, y0 + tile_h):
+                    for x in range(x0, x0 + tile_w):
+                        val = img[y, x]
+                        hist[val] += 1.0
+                
+                # Clip histogram
+                excess = 0.0
+                for k in range(256):
+                    if hist[k] > clip_val:
+                        excess += hist[k] - clip_val
+                        hist[k] = clip_val
+                
+                # Redistribute excess
+                val_inc = excess / 256.0
+                for k in range(256):
+                    hist[k] += val_inc
+                    
+                # CDF
+                cdf = np.zeros(256, dtype=np.float64)
+                running_sum = 0.0
+                for k in range(256):
+                    running_sum += hist[k]
+                    cdf[k] = running_sum
+                    
+                # Find min cdf value > 0
+                cdf_min = 0.0
+                for k in range(256):
+                    if cdf[k] > 0:
+                        cdf_min = cdf[k]
+                        break
+                        
+                denom = float(tile_area) - float(cdf_min)
+                if denom > 0:
+                    for k in range(256):
+                        luts[ti, tj, k] = min(max((cdf[k] - cdf_min) / denom * 255.0, 0.0), 255.0)
+                else:
+                    for k in range(256):
+                        luts[ti, tj, k] = float(k)
+                        
+        # 2. Interpolate for each pixel
+        out = np.zeros((h, w), dtype=np.uint8)
+        for y in prange(h):
+            for x in range(w):
+                fy = (float(y) - float(tile_h) / 2.0) / float(tile_h)
+                fx = (float(x) - float(tile_w) / 2.0) / float(tile_w)
+                
+                ti0 = int(np.floor(fy))
+                tj0 = int(np.floor(fx))
+                
+                ti0 = max(0, min(ti0, tile_size - 1))
+                tj0 = max(0, min(tj0, tile_size - 1))
+                ti1 = min(ti0 + 1, tile_size - 1)
+                tj1 = min(tj0 + 1, tile_size - 1)
+                
+                dy = fy - float(ti0)
+                dx = fx - float(tj0)
+                
+                dy = max(0.0, min(dy, 1.0))
+                dx = max(0.0, min(dx, 1.0))
+                
+                val = img[y, x]
+                
+                lut00 = luts[ti0, tj0, val]
+                lut01 = luts[ti0, tj1, val]
+                lut10 = luts[ti1, tj0, val]
+                lut11 = luts[ti1, tj1, val]
+                
+                res = (1.0 - dy) * (1.0 - dx) * lut00 + \
+                      (1.0 - dy) * dx * lut01 + \
+                      dy * (1.0 - dx) * lut10 + \
+                      dy * dx * lut11
+                      
+                out[y, x] = np.uint8(min(max(res, 0.0), 255.0))
+                
+        return out
+
 
 def clahe(image: np.ndarray, tile_size: int = 8, clip_limit: float = 2.0) -> np.ndarray:
     """
@@ -162,13 +276,28 @@ def clahe(image: np.ndarray, tile_size: int = 8, clip_limit: float = 2.0) -> np.
     Clip histogram tiap tile di clip_limit x (tile_area / 256).
     HE per tile, interpolasi bilinear antar tile.
     """
-    img = _to_xp(image).astype(xp.float64)
-    h, w = img.shape
-
+    h, w = image.shape
     tile_h = max(1, h // tile_size)
     tile_w = max(1, w // tile_size)
     padded_h = tile_h * tile_size
     padded_w = tile_w * tile_size
+
+    if not USING_GPU and HAS_NUMBA:
+        img_uint8 = np.asarray(image, dtype=np.uint8)
+        img_crop = img_uint8[:padded_h, :padded_w]
+        result = _clahe_numba(img_crop, tile_h, tile_w, tile_size, clip_limit)
+        
+        final = np.zeros_like(image, dtype=np.uint8)
+        final[:padded_h, :padded_w] = result
+        if padded_h < h:
+            final[padded_h:, :padded_w] = image[padded_h:, :padded_w]
+        if padded_w < w:
+            final[:padded_h, padded_w:] = image[:padded_h, padded_w:]
+        if padded_h < h and padded_w < w:
+            final[padded_h:, padded_w:] = image[padded_h:, padded_w:]
+        return final
+
+    img = _to_xp(image).astype(xp.float64)
     img_crop = img[:padded_h, :padded_w]
 
     luts = xp.zeros((tile_size, tile_size, 256), dtype=xp.float64)
@@ -288,25 +417,56 @@ def mean_filter(image: np.ndarray, kernel_size: int = 3) -> np.ndarray:
     return _to_np(result)
 
 
+if HAS_NUMBA:
+    @njit(parallel=True, fastmath=True)
+    def _median_filter_numba(padded: np.ndarray, h: int, w: int, kernel_size: int) -> np.ndarray:
+        result = np.zeros((h, w), dtype=np.float64)
+        for i in prange(h):
+            for j in range(w):
+                flat_patch = padded[i:i + kernel_size, j:j + kernel_size].copy().flatten()
+                flat_patch.sort()
+                mid = len(flat_patch) // 2
+                result[i, j] = flat_patch[mid]
+        return result
+
 def median_filter(image: np.ndarray, kernel_size: int = 3) -> np.ndarray:
     """Median filter manual menggunakan np.median per patch."""
     if kernel_size % 2 == 0:
         raise ValueError("kernel_size harus ganjil")
 
-    img = _to_xp(image).astype(xp.float64)
+    if USING_GPU:
+        img = _to_xp(image).astype(xp.float64)
+        pad = kernel_size // 2
+        padded = xp.pad(img, ((pad, pad), (pad, pad)), mode='reflect')
+        h, w = img.shape
+        result = xp.zeros((h, w), dtype=xp.float64)
+        for i in range(h):
+            for j in range(w):
+                patch = padded[i:i + kernel_size, j:j + kernel_size]
+                result[i, j] = xp.median(patch)
+        result = xp.clip(result, 0, 255).astype(xp.uint8)
+        return _to_np(result)
+
+    if HAS_NUMBA:
+        img = np.asarray(image).astype(np.float64)
+        pad = kernel_size // 2
+        padded = np.pad(img, ((pad, pad), (pad, pad)), mode='reflect')
+        h, w = img.shape
+        result = _median_filter_numba(padded, h, w, kernel_size)
+        result = np.clip(result, 0, 255).astype(np.uint8)
+        return result
+
+    img = np.asarray(image).astype(np.float64)
     pad = kernel_size // 2
-    padded = xp.pad(img, ((pad, pad), (pad, pad)), mode='reflect')
-
+    padded = np.pad(img, ((pad, pad), (pad, pad)), mode='reflect')
     h, w = img.shape
-    result = xp.zeros((h, w), dtype=xp.float64)
-
+    result = np.zeros((h, w), dtype=np.float64)
     for i in range(h):
         for j in range(w):
             patch = padded[i:i + kernel_size, j:j + kernel_size]
-            result[i, j] = xp.median(patch)
-
-    result = xp.clip(result, 0, 255).astype(xp.uint8)
-    return _to_np(result)
+            result[i, j] = np.median(patch)
+    result = np.clip(result, 0, 255).astype(np.uint8)
+    return result
 
 
 # -- SHARPENING -----------------------------------------------------------------
@@ -755,11 +915,189 @@ def extract_grayscale_stats(images_gray: np.ndarray) -> tuple[np.ndarray, list[f
     return np.array(gray_hists), gray_means, gray_stds, gray_skews, gray_kurts
 
 
+def gamma_correction(image: np.ndarray, gamma: float = 1.0) -> np.ndarray:
+    """
+    Gamma correction untuk citra grayscale maupun multi-channel (BGR/RGB).
+    Menggunakan lookup table (LUT) untuk kecepatan maksimal.
+    """
+    if gamma <= 0:
+        gamma = 1.0
+        
+    inv_gamma = 1.0 / gamma
+    
+    # Buat lookup table di CPU
+    lut_cpu = np.array([((i / 255.0) ** inv_gamma) * 255 for i in range(256)]).astype(np.uint8)
+    
+    if USING_GPU:
+        img = _to_xp(image)
+        lut_gpu = xp.asarray(lut_cpu)
+        result = lut_gpu[img]
+        return _to_np(result)
+    else:
+        # cv2.LUT sangat cepat di CPU dan mendukung citra multi-channel BGR secara as-is
+        return cv2.LUT(image, lut_cpu)
+
+
+def gray_world_white_balance(image: np.ndarray) -> np.ndarray:
+    """
+    Keseimbangan warna (White Balance) menggunakan asumsi Gray World.
+    Rata-rata intensitas masing-masing saluran R, G, B disamakan dengan
+    rata-rata keseluruhan dari ketiga saluran tersebut.
+    Mendukung input citra berwarna (H, W, 3) baik RGB maupun BGR.
+    """
+    if image.ndim != 3 or image.shape[2] != 3:
+        return image
+        
+    img = _to_xp(image).astype(xp.float64)
+    
+    # Hitung rata-rata untuk masing-masing saluran
+    mean_0 = img[:, :, 0].mean()
+    mean_1 = img[:, :, 1].mean()
+    mean_2 = img[:, :, 2].mean()
+    
+    # Rata-rata target abu-abu
+    mean_gray = (mean_0 + mean_1 + mean_2) / 3.0
+    
+    if mean_gray == 0:
+        return image
+        
+    # Hitung faktor pengali untuk setiap saluran
+    scale_0 = mean_gray / (mean_0 + 1e-8)
+    scale_1 = mean_gray / (mean_1 + 1e-8)
+    scale_2 = mean_gray / (mean_2 + 1e-8)
+    
+    # Lakukan scaling dan kliping ke rentang [0, 255]
+    img_wb = xp.zeros_like(img)
+    img_wb[:, :, 0] = xp.clip(img[:, :, 0] * scale_0, 0, 255)
+    img_wb[:, :, 1] = xp.clip(img[:, :, 1] * scale_1, 0, 255)
+    img_wb[:, :, 2] = xp.clip(img[:, :, 2] * scale_2, 0, 255)
+    
+    return _to_np(img_wb.astype(xp.uint8))
+
+
+def bilateral_filter(image: np.ndarray, d: int = 9, sigma_color: float = 75.0, sigma_space: float = 75.0) -> np.ndarray:
+    """
+    Bilateral filter menggunakan OpenCV untuk smoothing dengan mempertahankan tepi (edge-preserving).
+    """
+    return cv2.bilateralFilter(image, d, sigma_color, sigma_space)
+
+
+def extract_color_features(img_bgr: np.ndarray) -> dict:
+    """
+    Ekstrak fitur warna statistik dari image BGR.
+    Returns: dict dengan 9 fitur (mean, std, skewness untuk R, G, B)
+    
+    Justifikasi:
+    - Mean: rata-rata warna dominan per channel
+    - Std: variasi warna (tekstur warna)
+    - Skewness: distribusi asimetri warna (berguna untuk awan putih vs abu-abu)
+    """
+    img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+    features = {}
+    
+    channel_names = ['R', 'G', 'B']
+    for ch_idx, ch_name in enumerate(channel_names):
+        channel = img_rgb[:, :, ch_idx].astype(np.float64)
+        features[f'Color_Mean_{ch_name}'] = float(np.mean(channel))
+        features[f'Color_Std_{ch_name}']  = float(np.std(channel))
+        features[f'Color_Skew_{ch_name}'] = float(skew(channel.ravel()))
+    
+    return features
+
+
+def visualize_pipeline_steps(images: np.ndarray, labels: np.ndarray, pipeline: list, sample_indices: list | None = None) -> None:
+    """
+    Menampilkan visualisasi hasil preprocessing untuk setiap tahapan di PIPELINE secara otomatis.
+    Mendukung visualisasi dinamis untuk N-tahap pipeline.
+    """
+    import matplotlib.pyplot as plt
+    import cv2
+    
+    class_names = sorted(list(set(labels)))
+    
+    # 1. Cari 1 sampel per kelas jika belum disediakan
+    if sample_indices is None:
+        sample_indices = []
+        for cls in class_names:
+            idx = np.where(labels == cls)[0][0]
+            sample_indices.append(idx)
+            
+    num_classes = len(class_names)
+    num_steps = len(pipeline)
+    
+    # Simpan state gambar untuk setiap tahap
+    # Tahap 0: Gambar asli
+    current_images = [images[idx].copy() for idx in sample_indices]
+    
+    # Grid subplot: (num_steps + 1) baris, num_classes kolom
+    fig, axes = plt.subplots(num_steps + 1, num_classes, figsize=(num_classes * 2.5, (num_steps + 1) * 2.5))
+    
+    # Pastikan axes berbentuk 2D array jika num_steps=0 atau num_classes=1
+    if num_steps == 0:
+        axes = np.expand_dims(axes, axis=0)
+    if num_classes == 1:
+        axes = np.expand_dims(axes, axis=1)
+    if axes.ndim == 1:
+        if num_steps + 1 == 1:
+            axes = np.expand_dims(axes, axis=0)
+        else:
+            axes = np.expand_dims(axes, axis=1)
+        
+    # Helper untuk extract nama fungsi
+    def get_step_name(fn, idx):
+        co = getattr(fn, '__code__', None)
+        if co and co.co_names:
+            # Cari nama fungsi yang dipanggil (selain cv2 atau np jika ada)
+            names = [n for n in co.co_names if n not in ('cv2', 'np', 'cvtColor', 'COLOR_BGR2GRAY', 'COLOR_BGR2RGB')]
+            if names:
+                return f"Step {idx}: {names[0]}"
+        name = getattr(fn, '__name__', '<lambda>')
+        if name == '<lambda>':
+            return f"Step {idx}: Preprocessed"
+        return f"Step {idx}: {name}"
+
+    # Row 0: Original images
+    for i, img in enumerate(current_images):
+        if img.ndim == 3:
+            img_disp = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        else:
+            img_disp = img
+            
+        cmap = 'gray' if img.ndim == 2 else None
+        axes[0, i].imshow(img_disp, cmap=cmap)
+        axes[0, i].set_title(f"{class_names[i]}\nOriginal", fontsize=8)
+        axes[0, i].axis('off')
+        
+    # Row 1 to N: Pipeline steps
+    for step_idx, fn in enumerate(pipeline):
+        step_name = get_step_name(fn, step_idx + 1)
+        
+        for i in range(num_classes):
+            # Terapkan fungsi dari pipeline ke gambar sampel secara bertahap
+            current_images[i] = fn(current_images[i])
+            img = current_images[i]
+            
+            # Konversi ke RGB jika berwarna
+            if img.ndim == 3:
+                img_disp = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            else:
+                img_disp = img
+                
+            cmap = 'gray' if img.ndim == 2 else None
+            axes[step_idx + 1, i].imshow(img_disp, cmap=cmap)
+            axes[step_idx + 1, i].set_title(f"{step_name}", fontsize=8)
+            axes[step_idx + 1, i].axis('off')
+            
+    plt.tight_layout()
+    plt.show()
+
+
 if __name__ == "__main__":
     dummy = np.random.randint(0, 256, (128, 128), dtype=np.uint8)
     dummy_rgb = np.random.randint(0, 256, (128, 128, 3), dtype=np.uint8)
 
     tests = {
+        "extract_color_features": lambda: extract_color_features(dummy_rgb),
         "_ensure_grayscale": lambda: _ensure_grayscale(dummy_rgb),
         "normalize_minmax": lambda: normalize_minmax(dummy),
         "normalize_zscore": lambda: normalize_zscore(dummy),
@@ -787,6 +1125,7 @@ if __name__ == "__main__":
         "equalize_per_channel": lambda: equalize_per_channel(dummy_rgb),
         "clahe_per_channel": lambda: clahe_per_channel(dummy_rgb),
         "calc_nrbr": lambda: calc_nrbr(dummy_rgb),
+        "gamma_correction": lambda: gamma_correction(dummy, 1.2),
         "local_binary_pattern": lambda: local_binary_pattern(dummy),
         "calc_histogram": lambda: calc_histogram(dummy, 16, (0, 256)),
         "extract_hsv_features": lambda: extract_hsv_features(np.array([dummy_rgb])),
@@ -798,7 +1137,9 @@ if __name__ == "__main__":
     for name, fn in tests.items():
         try:
             result = fn()
-            if name == "to_hsv":
+            if name == "extract_color_features":
+                assert isinstance(result, dict) and len(result) == 9
+            elif name == "to_hsv":
                 assert result.shape == (128, 128, 3)
             elif name == "calc_histogram":
                 assert result.shape == (16,)
