@@ -99,9 +99,9 @@ Berikut adalah ringkasan hasil evaluasi dari setiap eksperimen yang telah dilaku
 <!-- BEGIN METRICS -->
 | Experiment | Classifier | Accuracy | Precision | Recall | F1-Score |
 |---|---|---|---|---|---|
-| Baseline | Random Forest | 0,5139 | 0,5144 | 0,5139 | 0,5133 |
-| Baseline | SVM | 0,4985 | 0,5287 | 0,4985 | 0,5049 |
-| Baseline | KNN | 0,4796 | 0,4799 | 0,4796 | 0,4771 |
+| Baseline | Random Forest | 0,5366 | 0,5280 | 0,5366 | 0,5291 |
+| Baseline | SVM | 0,5255 | 0,5256 | 0,5255 | 0,5134 |
+| Baseline | KNN | 0,4715 | 0,4659 | 0,4715 | 0,4657 |
 | Experiment 1 | Random Forest | 0,7812 | 0,7807 | 0,7812 | 0,7805 |
 | Experiment 1 | SVM | 0,7552 | 0,7601 | 0,7552 | 0,7559 |
 | Experiment 1 | KNN | 0,7238 | 0,7228 | 0,7238 | 0,7202 |
@@ -117,9 +117,9 @@ Berikut adalah ringkasan hasil evaluasi dari setiap eksperimen yang telah dilaku
 | Experiment 5 | Random Forest | 0,8190 | 0,8190 | 0,8190 | 0,8187 |
 | Experiment 5 | SVM | 0,8255 | 0,8260 | 0,8255 | 0,8254 |
 | Experiment 5 | KNN | 0,7776 | 0,7791 | 0,7776 | 0,7768 |
-| Experiment 6 | Random Forest | 0,7818 | 0,7802 | 0,7818 | 0,7795 |
-| Experiment 6 | SVM | 0,7877 | 0,7869 | 0,7877 | 0,7868 |
-| Experiment 6 | KNN | 0,7345 | 0,7318 | 0,7345 | 0,7315 |
+| Experiment 6 | Random Forest | 0,8157 | 0,8156 | 0,8157 | 0,8153 |
+| Experiment 6 | SVM | 0,8312 | 0,8348 | 0,8312 | 0,8316 |
+| Experiment 6 | KNN | 0,7987 | 0,7987 | 0,7987 | 0,7974 |
 | Experiment 7 | Random Forest | 0,7788 | 0,7756 | 0,7788 | 0,7764 |
 | Experiment 7 | SVM | 0,8025 | 0,8017 | 0,8025 | 0,8011 |
 | Experiment 7 | KNN | 0,7487 | 0,7465 | 0,7487 | 0,7464 |
